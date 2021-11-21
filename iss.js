@@ -33,23 +33,23 @@ const fetchMyIP = function(callback) {
  *   - The lat and lng as an object (null if error). Example:
  *     { latitude: '49.27670', longitude: '-123.13000' }
  */
- const fetchCoordsByIP = function(ip, callback) {
-    request(`https://freegeoip.app/json/${ip}`, (error, response, body) => {
-      if (error) {
-        callback(error, null);
-        return;
-      }
+const fetchCoordsByIP = function(ip, callback) {
+  request(`https://freegeoip.app/json/${ip}`, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
   
-      if (response.statusCode !== 200) {
-        callback(Error(`Status Code ${response.statusCode} when fetching Coordinates for IP: ${body}`), null);
-        return;
-      }
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching Coordinates for IP: ${body}`), null);
+      return;
+    }
   
-      const { latitude, longitude } = JSON.parse(body);
+    const { latitude, longitude } = JSON.parse(body);
   
-      callback(null, { latitude, longitude });
-    });
-  };
+    callback(null, { latitude, longitude });
+  });
+};
   
 
 
@@ -87,29 +87,29 @@ const fetchISSFlyOverTimes = function(coords, callback) {
 /**
  * Orchestrates multiple API requests in order to determine the next 5 upcoming ISS fly overs for the user's current location.
  * Input:
- *   - A callback with an error or results. 
+ *   - A callback with an error or results.
  * Returns (via Callback):
  *   - An error, if any (nullable)
  *   - The fly-over times as an array (null if error):
  *     [ { risetime: <number>, duration: <number> }, ... ]
- */ 
+ */
 const nextISSTimesForMyLocation = function(callback) {
   fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    fetchCoordsByIP(ip, (error, loc) => {
       if (error) {
-          return callback(error, null);
+        return callback(error, null);
       }
-      fetchCoordsByIP(ip, (error, loc) => {
-          if (error) {
-              return callback(error, null);
-          }
-          fetchISSFlyOverTimes(loc, (error, nextPasses) => {
-              if (error) {
-                  return callback(error, null);
-              }
+      fetchISSFlyOverTimes(loc, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
 
-              callback(null, nextPasses);
-          });
+        callback(null, nextPasses);
       });
+    });
   });
 };
 
